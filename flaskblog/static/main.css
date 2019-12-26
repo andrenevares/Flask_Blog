@@ -1,4 +1,4 @@
-body {
+ody {
 	background: #fafafa;
 	color: #333333;
 	margin-top: 5rem;
@@ -59,7 +59,7 @@ a.article-title:hover {
 .article-metadata {
 	padding-bottom: 1px;
 	margin-bottom: 4px;
-	border-bottom: 1px solid #e3e3e3;
+	border-bottom: 1px solid #e3e3e3
 }
 
 .article-metadata a:hover {
