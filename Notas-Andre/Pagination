@@ -1,0 +1,24 @@
+
+Na minha aplicação escrevi a seguinte linha de código
+    @app.route("/")
+    @app.route("/home")
+    def home():
+        posts = Post.query.all() 
+        return render_template('home.html', posts=posts)
+
+Post.query.all() trás um problema.  A página simplesmente fica lenta
+Dessa forma seria interessante paginacao
+
+posts = Post.query.paginate()
+
+Para achar os métodos
+
+Python
+>>> from flaskblog.models import Post 
+>>> posts = Post.query.paginate()
+>>> dir(posts)
+['__class__', '__delattr__', '__dict__', '__dir__', '__doc__', '__eq__', '__format__', '__ge__', '__getattribute__', '__gt__', '__hash__', '__init__', '__init_subclass__', '__le__', '__lt__', '__module__', '__ne__', '__new__', '__reduce__', '__reduce_ex__', '__repr__', '__setattr__', '__sizeof__', '__str__', '__subclasshook__', '__weakref__', 'has_next', 'has_prev', 'items', 'iter_pages', 'next', 'next_num', 'page', 'pages', 'per_page', 'prev', 'prev_num', 'query', 'total']
+
+Por default o per_page=20
+
+

@@ -1,5 +1,5 @@
 body {
-	background: #f1f1f1;
+	background: #fafafa;
 	color: #333333;
 	margin-top: 5rem;
 }
@@ -13,9 +13,8 @@ h6 {
 	color: #444444;
 }
 
-
 .bg-navbar {
-	background-color: #1d3749;
+	background-color: #5f788a;
 }
 
 .site-header .navbar-nav .nav-link {
@@ -31,7 +30,7 @@ h6 {
 }
 
 .content-section {
-	background: #d3d3d3;
+	background: #ffffff;
 	padding: 10px 20px;
 	border: 1px solid #dddddd;
 	border-radius: 3px;
@@ -83,4 +82,11 @@ a.article-title:hover {
 
 .account-heading {
 	font-size: 2.5rem;
+}
+
+.border-andre {
+	border-color: #17a2b8 !important;
+	border-width: 1px;
+	min-width: 2.5rem;
+
 }
