@@ -1,5 +1,5 @@
-ody {
-	background: #fafafa;
+body {
+	background: #f1f1f1;
 	color: #333333;
 	margin-top: 5rem;
 }
@@ -13,8 +13,9 @@ h6 {
 	color: #444444;
 }
 
-.bg-steel {
-	background-color: #5f788a;
+
+.bg-navbar {
+	background-color: #1d3749;
 }
 
 .site-header .navbar-nav .nav-link {
@@ -30,7 +31,7 @@ h6 {
 }
 
 .content-section {
-	background: #ffffff;
+	background: #d3d3d3;
 	padding: 10px 20px;
 	border: 1px solid #dddddd;
 	border-radius: 3px;
