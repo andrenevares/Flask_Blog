@@ -38,6 +38,7 @@ Isso é bom porque permite que nós lidemos com token e prazo de expiração sem
 Agora vamos voltar ao nosso projeto e vamos adicionar alguns módulos no nosso Modelo User Model
 Se nós formos para o nosso projeto e abrirmos o arquivo __models.py__
 
+### Importar Módulo TimedJSONWebSignatureSerializer
 O primeiro passo seria importar os comandos que fizemos no prompt 
 Então vamos pegar o
 ```
@@ -53,6 +54,7 @@ from flaskblog import db, login_manager
 from flask_login import UserMixin```
 ```
 
+Nos 
 
 
 
