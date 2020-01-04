@@ -17,6 +17,28 @@ class User(db.Model, UserMixin):
     password = db.Column(db.String(60), nullable=False)
     posts = db.relationship('Post', backref='author', lazy=True)
 
+    def get_reset_token(self, expires_sec=1800):
+        s = Serializer(app.config['SECRET_KEY'], expires_sec)
+        return = s.dumps({'user_id': self.id}).decode('utf-8')
+
+    def verify_reset_token(token):
+        # dessa vez não precisamos passar o tempo de expiração
+        # esse tempo foi passado na criação do Token
+        s = Serializer(app.config['SECRET_KEY']) 
+        # Pode acontecer alguma exceção quando tentarmos carregar esse token
+        # O Token pode ser inválido, ou o tempo já ter expirado
+        # Ou qualquer coisa assim
+        # Dessa forma vamos colocar um Try e Except Block
+        try: #vamos tentar trazer o user id 
+            user_id = s.loads(token)['user_id']
+        except: # se houver uma exceção 
+            return None 
+        return User.query.get(user_id) # Caso não aconteça nenhuma exceção
+
+
+
+
+
     def __repr__(self):
         return f"User('{self.username}', '{self.email}', '{self.image_file}')"
 

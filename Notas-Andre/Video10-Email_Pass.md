@@ -1,15 +1,25 @@
 # Email e Password
 Este tutorial irá ensinar a você a desenvolver uma aplicação onde seja permitido que o usuário receba um e-mail para resetar sua senha.
 
-Primeiro vamos aprender a gerar um token time-sensitive de modo que somemte um usuário específico possa resetar a sua própia senha.... depois vamos ver como enviar para o usuário essa informação para o email do usuário.
+## Token expirável com o tempo
+Por questões de segurança precisamo aprender a gerar um __token que expire depois de um certo tempo__ (time sensitive token), desta forma somemte um usuário específico, e dentro de um prazo estabelevido, poderá resetar sua própia senha.... 
+Assim que aprendermos a gerar esse tipo de Token expirável aprenderemos como enviar essa informação para o usuário usuário.
 
 ## Como gerar um Token sensível ao tempo (time sensitive)
-para garantir que somente uma pessoa que tenha acesso àquele e-mail específico possa resetar a sua senha
+precimos garantir que somente quem tenha acesso àquele e-mail específico possa resetar a sua senha
 para fazer isso vamos usar um pacote chamado __itsdangerous__
 esse pacote é normalmente instalado quando instalamos o Flask
 
-Vamos abrir um terminal python
-``` >>> from itsdangerous import TimedJSONWebSignatureSerializer as Serializer ```
+## Entendo o via terminal
+Vamos abrir um terminal python, 
+> no caso do windows basta pressionar WIN + R e depois digitar CMD 
+na linha de comando abra o ```Python```
+
+
+```
+>>> from itsdangerous import TimedJSONWebSignatureSerializer as Serializer 
+```
+
 Se você digitou corretamente não devemos ter nenhum tipo de erro
 
 Agora nós vamos usar esse Serializer para passar:
@@ -22,10 +32,15 @@ Agora nós vamos usar esse Serializer para passar:
 >>> token
 'eyJhbGciOiJIUzUxMiIsImlhdCI6MTU3ODE1OTIzMiwiZXhwIjoxNTc4MTU5MjYyfQ.eyJ1c2VyX2lkIjoxfQ.7G26p6OYxCb1SeXLuFZTuKg1P6JXppIrERcnGAu37EAOqTtYcA64TgMGXjLPKu7UwYX3g9tJ0VEX4E-njBazIg'
 ```
-Para checar se esse token é válido podemos usar o método __load s__ 
+Acabamos de gerar um TOKEN que vai expirar em 30 segundos
+
+Para checar se esse token é válido podemos usar o método __loads__ 
+
+###  Fora do prazo 
 Se isso for feito em menos de 30 segundos vamos ver caso contrário receberemos uma mensagem:
 > itsdangerous.exc.SignatureExpired: Signature expired
 
+### Dentro do tempo
 Porém ao fazer isso antes dos 30 segundos que nós setamos iremos conseguir esse resultado:
 ```
 >>> s.loads(token)
@@ -40,7 +55,6 @@ Se nós formos para o nosso projeto e abrirmos o arquivo __models.py__
 
 ### Importar Módulo TimedJSONWebSignatureSerializer
 O primeiro passo seria importar os comandos que fizemos no prompt 
-Então vamos pegar o
 ```
 from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
 ```
@@ -51,12 +65,136 @@ os módulos vão ficar mais ou menos assim:
 from datetime import datetime
 from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
 from flaskblog import db, login_manager
-from flask_login import UserMixin```
+from flask_login import UserMixin
 ```
 
-Nós vamos precisar também da chave secreta usada no app
-então vamos chamar a app do flaskblog ok 
+## Trazendo a chave secreta do app para o models.py
+Nós também vamos precisar da chave secreta usada pelo nosso app.
+Dessa forma, como nosso projeto se chama flaskblog, temos que importar dele
+````
+from flaskblog import db, login_manager, app 
+````
 
+dessa forma o nosso arquivo models vai ficar com os seguintes imports
+````
+from datetime import datetime
+from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
+from flaskblog import db, login_manager, app
+from flask_login import UserMixin
+````
+## Facilitando a criação dos tokens
+agora dentro do User Model (class User) vamos criar alguns métodos que vão facilitar a criação dos Tokens
+vamos chamar esse método de __get_reset_token()__
+
+### Método de criaçao de token para reset
+    def get_reset_token(self, expires_sec=1800):
+        s = Serializer(app.config['SECRET_KEY'], expires_sec)
+        return = s.dumps({'user_id': self.id}).decode('utf-8')
+
+### Método para verificar o token gerado
+    def verify_reset_token(token):
+        # dessa vez não precisamos passar o tempo de expiração
+        # esse tempo foi passado na criação do Token
+        s = Serializer(app.config['SECRET_KEY']) 
+        # Pode acontecer alguma exceção quando tentarmos carregar esse token
+        # O Token pode ser inválido, ou o tempo já ter expirado
+        # Ou qualquer coisa assim
+        # Dessa forma vamos colocar um Try e Except Block
+        try: #vamos tentar trazer o user id 
+            user_id = s.loads(token)['user_id']
+        except: # se houver uma exceção 
+            return None 
+        return User.query.get(user_id) # Caso não aconteça nenhuma exceção
+    
+Verificamos que esse método não faz nada com a instância do usuário
+por exemplo, ele nunca usa a variável self
+assistir a Object Oriented Series de MS COREY 
+nós precisamos dizer ao python que se trata de método estático usando um decorator 
+```@staticmethod``` acima do método...
+
+Dessa forma o código fica assim (vou tirar os comentários ok?)
+    
+    @staticmethod
+    def verify_reset_token(token):
+        s = Serializer(app.config['SECRET_KEY']) 
+        try: 
+            user_id = s.loads(token)['user_id']
+        except:
+            return None 
+        return User.query.get(user_id)
+
+Com esse ```@staticmethod``` acima do método basicamente você está informando ao python que ele somente ele só vai trabalhar com o a variável token!
+
+## Continuando...
+Agora nós temos como gerar e validar tokens! 
+Então precisamos:
+1. criar as rotas para os usuários resetarem suas senhas...
+2. aprender como enviar um email com um link necessário
+
+Bem... ieremos precisar criar dois novos __forms__ para nossas routes...
+Mas vão ser formulários extremamente simples!
+Vamos abrir nosso __forms.py__
+
+## Form 01 - Onde o usuário solicitará reset de senha
+É um formulário simples.
+Vamos chamar de __RequestResetForm__
+O usuário irá informar o email e solicitará reset de senha
+
+    class RequestResetForm(FlaskForm):
+        email = StringField('Email',
+                            validators=[DataRequired(), Email()])
+        submit = SubmitField('Request Password Reset')
+
+mas seria interessante que verificassemos se ele digitou certo, ou se aquele e-mail está no banco de dados... Caso contrário ele simplesmente precisa criar uma conta e não requisitar uma senha de reset.
+
+
+    class RequestResetForm(FlaskForm):
+        email = StringField('Email',
+                            validators=[DataRequired(), Email()])
+        submit = SubmitField('Request Password Reset')
+
+        def validate_email(self, email):
+            # ao invés de testar se o email existe, vamos ver se ele não existe
+            if email.data != current_user.email:
+                user = User.query.filter_by(email=email.data).first()
+                if user is None:
+                    raise ValidationError('There is no account with this email. You must register first.')
+
+ ## Form 2 - Onde o usuário alterará a senha
+ Serão dois campos de input
+ 1. Usuário digita a senha
+ 2. usuário digita a senha novamente em outro campo
+ 3. Clica em submit
+ 4. se as duas forem iguais haverá o reset de senha
+
+        class ResetPasswordForm(FlaskForm):
+            password = PasswordField('Password', validators=[DataRequired()])
+            confirm_password = PasswordField('Confirm Password',
+                                            validators=[DataRequired(), EqualTo('password')])
+            submit = SubmitField('Reset Password')
+
+# Passo 03 - Criar nossas rotas
+
+## Importar os fomulários criados
+1. Vamos abrir o arquivo __routes.py__
+2. Vamos importar para o __routes.py__ os formulários que acabamos de criar, ou seja __RequestResetForm__ e  __ResetPasswordForm__
+
+````
+from flaskblog.forms import RegistrationForm, LoginForm, UpdateAccountForm, PostForm, RequestResetForm, ResetPasswordForm
+````
+
+Dentro do routes.py o arquivo ficará assim:
+
+    import os
+    import secrets
+    from PIL import Image
+    from flask import render_template, url_for, flash, redirect, request, abort
+    from flaskblog import app, db, bcrypt
+    from flaskblog.forms import RegistrationForm, LoginForm, UpdateAccountForm, PostForm, RequestResetForm, ResetPasswordForm
+    from flaskblog.models import User, Post
+    from flask_login import login_user, current_user, logout_user, login_required
+
+## Criar as rotas
 
 
 
