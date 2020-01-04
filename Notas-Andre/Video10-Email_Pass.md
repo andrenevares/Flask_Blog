@@ -54,7 +54,8 @@ from flaskblog import db, login_manager
 from flask_login import UserMixin```
 ```
 
-Nos 
+Nós vamos precisar também da chave secreta usada no app
+então vamos chamar a app do flaskblog ok 
 
 
 
