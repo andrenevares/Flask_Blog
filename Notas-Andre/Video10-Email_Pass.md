@@ -266,5 +266,92 @@ Agora para usuário e senha não vou digitar aqui por questões óbvias!  Só se
 
 Para este tipo de informação eu vou colocar como uma ___enviroment variable___
 
-Para esconder informações sensíveis é necessário um tutorial específico.
+Para esconder informações sensíveis é necessário um tutorial específico.  
 
+Para ler o tutorial sobre ___enviroment variable___ clique no link  https://github.com/andrenevares/Flask_Blog/blob/master/Notas-Andre/Enviroment-Variables.md
+
+Caso queira ver um exemplo de código: https://github.com/andrenevares/codigos/blob/master/python/enviroment-variables/enviroment-variables.py
+
+## ... Depois que você armazene suas enviroment variables 
+No meu caso eu criei duas variáveis __EMAIL_USER__ e __EMAIL_PASSWORD__
+o código ficará mais ou menos assim:
+
+```
+import os
+...
+
+app.config['MAIL_SERVER'] = 'smtp.googlemail.com'
+app.config['MAIL_PORT'] = 587
+app.config['MAIL_USE_TLS'] = True
+app.config['MAIL_USERNAME'] = os.environ.get('EMAIL_USER')
+app.config['MAIL_PASSWORD'] = os.environ.get('EMAIL_PASSWORD')
+```
+
+## Iniciar a extensão
+Após configurar a extensão você poderé inicia a extensão no seu código!
+```
+mail = Mail(app)
+```
+
+## O código final fica mais ou menos assim
+```
+import os
+...
+
+app.config['MAIL_SERVER'] = 'smtp.googlemail.com'
+app.config['MAIL_PORT'] = 587
+app.config['MAIL_USE_TLS'] = True
+app.config['MAIL_USERNAME'] = os.environ.get('EMAIL_USER')
+app.config['MAIL_PASSWORD'] = os.environ.get('EMAIL_PASSWORD')
+mail = Mail(app)
+```
+
+## Voltando ao Routes
+
+Depois de no __init.py__:
+1. importar o módulo ```import os```
+2. fazer o app.config do ['MAIL_SERVER'], ['MAIL_PORT'], ['MAIL_USE_TLS'], ['MAIL_USERNAME'] e ['MAIL_PASSWORD'] 
+3. e inicar a extensão por meio do ``` mail = Mail(app)```
+... Vamos voltar ao __routes.py__
+
+## Importando o mail para o routes
+Como nossa aplicação se chama flaskblog vamos importar do flaskblog a instância mail criada no __init.py__
+Mas também precisamos possibilitar o envio e isso será feito por meio __Message__ 
+### Comando básico de import
+```
+from flaskblog import mail
+from flask.mail import Message
+```
+
+
+###  Como estão nossos imports 
+```
+import os
+import secrets
+from PIL import Image
+from flask import render_template, url_for, flash, redirect, request, abort
+from flaskblog import app, db, bcrypt, mail
+from flaskblog.forms import RegistrationForm, LoginForm, UpdateAccountForm, PostForm, RequestResetForm, ResetPasswordForm
+from flaskblog.models import User, Post
+from flask_login import login_user, current_user, logout_user, login_required
+from flask.mail import Message
+```
+
+## A função de envio
+```
+def send_reset_email(user):
+    token = user.get_reset_token()
+    msg = Message('Assunto', sender='email@dequemenvia.com', recipients=[user.email])
+    msg.body = f'''To reset your password, please visit the following link:
+    {url_for('reset_token', token=token, _external=True)}
+    
+    If you did not make this request, then simple ignore this email and no change will be maid.
+    '''
+```
+> Observação 01: Estamos usando a sintaxe de multi line que se inicia com f''' ... '''.  Isso permite que façamos uma mensagem simples no sistema.
+
+> Observação 02: Podemos usar templates do Jinja2 mas ainda não fizemos nesse tutorial
+
+> Observação 03: Usamos dentro do ```f''' {url_for()} '''``` com apenas uma chave... diferentemente da sintaxe usada no jinja2 quando usamos dois colchetes separados por espaços ```{{ url_for() }}``` 
+
+> Observação 04: Usamos o ```_external=True``` ao invés de usar uma url estática, estaremos usando uma url relativa
