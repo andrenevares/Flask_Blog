@@ -194,7 +194,77 @@ Dentro do routes.py o arquivo ficará assim:
     from flaskblog.models import User, Post
     from flask_login import login_user, current_user, logout_user, login_required
 
-## Criar as rotas
+# Criar as rotas
+Vamos criar as sequintes rotas
+__reset_request__: onde o usuário vai inserir o seu email e solicitar o token para mudar usuário
+
+__reset_token__: onde o usuário vai trocar a senha, sendo o token ativo!
+
+## reset_request
+1. Não é necessário que ele esteja logado! então nada de @loginrequired
+2. Mas se ele estiver logado e digitar reset password? Masdamos ele para home, ok?
+
+Código da route então ...
+```
+@app.route("/reset_password", methods=['GET', 'POST'])
+def reset_request():
+    if current_user.is_authenticated:
+        return redirect(url_for('home'))
+    form render_template(reset_request.html, title='Reset Password', form=form)
+```
+
+mas precisamos verificar que se token enviado por e-mail está ativo certo?
 
 
+## reset_token
+Será onde o usuário vai entrar com a nova senha 
+É necessário que o token esteja ativo
+a url será algo tipo __/reset_password/<token>__ 
+
+
+# Enviando email
+## Extensão
+Para enviar e-mail nós vamos usar uma outra extensão chamada de __flask-mail__.  Para isso precisaremos instalar ok?
+
+## Instalando flask-mail
+```pip install flask-mail```
+
+## Importando flask-mail
+Trazemos para o nosso arquivo __init.py__
+```
+from flask_mail import Mail
+``` 
+
+Assim o nosso __init.py__ está com os seguintes imports
+
+```
+from flask import Flask
+from flask_sqlalchemy import SQLAlchemy
+from flask_bcrypt import Bcrypt
+from flask_login import LoginManager
+from flask_mail import Mail
+```
+
+## Configurando mail server
+agora precisamos configurar algumas coisas
+Nós vamos precisar de um
+- mail server
+- mail port
+
+de forma a usar TLS
+- username e senha 
+
+Para fins deste exemplo vou estar usando __GMAIL__  
+
+Vamos escrever algumas linhas de código na parte de configurações do __init.py__, ok?
+```
+app.config['MAIL_SERVER'] = 'smtp.googlemail.com'
+app.config['MAIL_PORT'] = 587
+app.config['MAIL_USE_TLS'] = True
+```
+Agora para usuário e senha não vou digitar aqui por questões óbvias!  Só se eu quisesse que todo mundo tivesse acesso a meu e-mail...
+
+Para este tipo de informação eu vou colocar como uma ___enviroment variable___
+
+Para esconder informações sensíveis é necessário um tutorial específico.
 

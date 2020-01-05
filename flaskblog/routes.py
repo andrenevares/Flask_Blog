@@ -152,3 +152,31 @@ def user_posts(username):
         .order_by(Post.date_posted.desc())\
         .paginate(page=page, per_page=5) 
     return render_template('user_post.html', posts=posts, user=user)
+
+def send_reset_email(user):
+    ...
+
+
+@app.route("/reset_password", methods=['GET', 'POST'])
+def reset_request():
+    if current_user.is_authenticated: # se o usuário estiver logado 
+        return redirect(url_for('home')) # então HOME
+    form = RequestResetForm()
+    if form.validate_on_submit(): # se o email do usuário for correto
+        user = User.query.filter_by(email=form.email.data).first() #trazemos o email e agora precisamos enviar um email para o usuário
+        send_reset_email(user)
+        flash('An email has been sent.  Click on e-mail link to reset your password', 'info') 
+        return redirect(url_for('login')) # Mandanos o usuário para a página de login!
+    return render_template(reset_request.html, title='Reset Password', form=form)
+
+@app.route("/reset_password/<token>", methods=['GET', 'POST'])
+def reset_token(token):
+    if current_user.is_authenticated: # se o usuário estiver logado 
+        return redirect(url_for('home')) # então HOME
+    user = User.verify_reset_token(token) # no models se o essa função sendo o tokern válido irá trazer o user_id
+    if user is None: # Se ao verificar o token não retornar user
+        flash('That´s an invalid invalid or expired link!', 'warning')
+        return redirect(url_for('reset_request'))
+    form = ResetPasswordForm()
+    return render_template(reset_token.html, title='Reset Password', form=form)
+    
