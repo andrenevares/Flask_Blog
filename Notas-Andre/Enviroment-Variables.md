@@ -45,6 +45,11 @@ print(email_password)
 ```
 
 
+### Observação ao usar o Gmail
+Se você estiver recebendo uma mensagem de erro quando estiver usando GMAIL talvez seja necessário 
+habilitar o __Acesso permitido para apps menos seguros__
+
+
 
 
 
