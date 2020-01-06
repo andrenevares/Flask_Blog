@@ -14,7 +14,8 @@ from flask_mail import Message
 @app.route("/home")
 def home():
     page = request.args.get('page', 1, type=int)
-    posts = Post.query.order_by(Post.date_posted.desc()).paginate(page=page, per_page=5)
+    posts = Post.query.order_by(
+        Post.date_posted.desc()).paginate(page=page, per_page=5)
     return render_template('home.html', posts=posts)
 
 
@@ -29,8 +30,10 @@ def register():
         return redirect(url_for('home'))
     form = RegistrationForm()
     if form.validate_on_submit():
-        hashed_password = bcrypt.generate_password_hash(form.password.data).decode('utf-8')
-        user = User(username=form.username.data, email=form.email.data, password=hashed_password)
+        hashed_password = bcrypt.generate_password_hash(
+            form.password.data).decode('utf-8')
+        user = User(username=form.username.data,
+                    email=form.email.data, password=hashed_password)
         db.session.add(user)
         db.session.commit()
         flash('Your account has been created! You are now able to log in', 'success')
@@ -64,7 +67,8 @@ def save_picture(form_picture):
     random_hex = secrets.token_hex(8)
     _, f_ext = os.path.splitext(form_picture.filename)
     picture_fn = random_hex + f_ext
-    picture_path = os.path.join(app.root_path, 'static/profile_pics', picture_fn)
+    picture_path = os.path.join(
+        app.root_path, 'static/profile_pics', picture_fn)
 
     output_size = (125, 125)
     i = Image.open(form_picture)
@@ -90,7 +94,8 @@ def account():
     elif request.method == 'GET':
         form.username.data = current_user.username
         form.email.data = current_user.email
-    image_file = url_for('static', filename='profile_pics/' + current_user.image_file)
+    image_file = url_for(
+        'static', filename='profile_pics/' + current_user.image_file)
     return render_template('account.html', title='Account',
                            image_file=image_file, form=form)
 
@@ -100,7 +105,8 @@ def account():
 def new_post():
     form = PostForm()
     if form.validate_on_submit():
-        post = Post(title=form.title.data, content=form.content.data, author=current_user)
+        post = Post(title=form.title.data,
+                    content=form.content.data, author=current_user)
         db.session.add(post)
         db.session.commit()
         flash('Your post has been created!', 'success')
@@ -192,7 +198,8 @@ def reset_token(token):
         return redirect(url_for('reset_request'))
     form = ResetPasswordForm()
     if form.validate_on_submit():
-        hashed_password = bcrypt.generate_password_hash(form.password.data).decode('utf-8')
+        hashed_password = bcrypt.generate_password_hash(
+            form.password.data).decode('utf-8')
         user.password = hashed_password
         db.session.commit()
         flash('Your password has been updated! You are now able to log in', 'success')
